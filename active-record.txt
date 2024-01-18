@@ -1,0 +1,100 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Persoana {
+    private String nume;
+    private String prenume;
+    private int varsta;
+
+    public Persoana(String nume, String prenume, int varsta) {
+        this.nume = nume;
+        this.prenume = prenume;
+        this.varsta = varsta;
+    }
+
+    public void save() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("persoane.txt", true))) {
+            writer.println(nume + "," + prenume + "," + varsta);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<Persoana> readAll() {
+        List<Persoana> persoane = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("persoane.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 3) {
+                    String nume = parts[0];
+                    String prenume = parts[1];
+                    int varsta = Integer.parseInt(parts[2]);
+                    persoane.add(new Persoana(nume, prenume, varsta));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return persoane;
+    }
+
+    public static Persoana read(int id) {
+        List<Persoana> persoane = readAll();
+        if (id >= 0 && id < persoane.size()) {
+            return persoane.get(id);
+        }
+        return null;
+    }
+
+    public void update() {
+        List<Persoana> persoane = readAll();
+        for (int i = 0; i < persoane.size(); i++) {
+            if (persoane.get(i).equals(this)) {
+                persoane.set(i, this);
+                writeAll(persoane);
+                return;
+            }
+        }
+    }
+
+    public void delete() {
+        List<Persoana> persoane = readAll();
+        persoane.remove(this);
+        writeAll(persoane);
+    }
+
+    private static void writeAll(List<Persoana> persoane) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("persoane.txt"))) {
+            for (Persoana persoana : persoane) {
+                writer.println(persoana.nume + "," + persoana.prenume + "," + persoana.varsta);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        // Exemplu de utilizare
+        Persoana persoana = new Persoana("Popescu", "Ion", 30);
+        persoana.save();
+
+        // Citirea tuturor persoanelor
+        List<Persoana> toatePersoanele = Persoana.readAll();
+        for (Persoana p : toatePersoanele) {
+            System.out.println("Nume: " + p.nume + ", Prenume: " + p.prenume + ", Varsta: " + p.varsta);
+        }
+
+        // Exemplu de actualizare
+        Persoana persoanaDeActualizat = toatePersoanele.get(0);
+        persoanaDeActualizat.varsta = 31;
+        persoanaDeActualizat.update();
+
+        // Exemplu de ștergere
+        Persoana persoanaDeSters = toatePersoanele.get(1);
+        persoanaDeSters.delete();
+    }
+}
